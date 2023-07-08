@@ -219,7 +219,7 @@ public class NewBeeMallOrderServiceImpl implements NewBeeMallOrderService {
                 if (updateStockNumResult < 1) {
                     NewBeeMallException.fail(ServiceResultEnum.SHOPPING_ITEM_COUNT_ERROR.getResult());
                 }
-                //生成订单号
+                //生成订单号 当前时间+4个随机数
                 String orderNo = NumberUtil.genOrderNo();
                 int priceTotal = 0;
                 //保存订单
@@ -330,16 +330,94 @@ public class NewBeeMallOrderServiceImpl implements NewBeeMallOrderService {
 
     @Override
     @Transactional
+    public String checkFinish(Long[] ids) {
+        //查询所有的订单 判断状态 修改状态和更新时间
+        List<NewBeeMallOrder> orders = newBeeMallOrderMapper.selectByPrimaryKeys(Arrays.asList(ids));
+        String errorOrderNos = "";
+        if (!CollectionUtils.isEmpty(orders)) {
+            for (NewBeeMallOrder newBeeMallOrder : orders) {
+                //已删除订单无法 设置为已完成
+                if (newBeeMallOrder.getIsDeleted() == 1) {
+                    errorOrderNos += newBeeMallOrder.getOrderNo() + " ";
+                    continue;
+                }
+                //未支付、未配货、未出库(<3)订单 或者已经显示已完成 不能显示已完成
+                if (newBeeMallOrder.getOrderStatus() == 4 || newBeeMallOrder.getOrderStatus()<3) {
+                    errorOrderNos += newBeeMallOrder.getOrderNo() + " ";
+                }
+            }
+            if (StringUtils.isEmpty(errorOrderNos)) {
+                //订单状态正常 可以执行配货完成操作 修改订单状态和更新时间
+                if (newBeeMallOrderMapper.checkDone(Arrays.asList(ids)) > 0) {
+                    return ServiceResultEnum.SUCCESS.getResult();
+                } else {
+                    return ServiceResultEnum.DB_ERROR.getResult();
+                }
+            } else {
+                //订单此时不可执行出库操作
+                if (errorOrderNos.length() > 0 && errorOrderNos.length() < 100) {
+                    return errorOrderNos + "订单的状态不是支付成功无法执行出库操作";
+                } else {
+                    return "你选择了太多状态不是支付成功的订单，无法执行配货完成操作";
+                }
+            }
+        }
+        //未查询到数据 返回错误提示
+        return ServiceResultEnum.DATA_NOT_EXIST.getResult();
+    }
+
+    @Override
+    @Transactional
+    public String deleteOrder(Long[] ids) {
+        //查询所有的订单 判断状态 修改状态和更新时间
+        List<NewBeeMallOrder> orders = newBeeMallOrderMapper.selectByPrimaryKeys(Arrays.asList(ids));
+        String errorOrderNos = "";
+        if (!CollectionUtils.isEmpty(orders)) {
+            for (NewBeeMallOrder newBeeMallOrder : orders) {
+                //已删除订单无法 不用再删除
+                if (newBeeMallOrder.getIsDeleted() == 1) {
+                    errorOrderNos += newBeeMallOrder.getOrderNo() + " ";
+                    continue;
+                }
+                //只有超时关闭、商家关闭、手动关闭的订单 可以删除
+                if (newBeeMallOrder.getOrderStatus() >0 ) {
+                    errorOrderNos += newBeeMallOrder.getOrderNo() + " ";
+                }
+            }
+            if (StringUtils.isEmpty(errorOrderNos)) {
+                //订单状态正常 可以执行配货完成操作 修改订单状态和更新时间
+                if (newBeeMallOrderMapper.checkDone(Arrays.asList(ids)) > 0) {
+                    return ServiceResultEnum.SUCCESS.getResult();
+                } else {
+                    return ServiceResultEnum.DB_ERROR.getResult();
+                }
+            } else {
+                //订单此时不可执行出库操作
+                if (errorOrderNos.length() > 0 && errorOrderNos.length() < 100) {
+                    return errorOrderNos + "请选择删除已关闭订单";
+                } else {
+                    return "你选择了太多状态不是关闭的订单，无法执行删除操作";
+                }
+            }
+        }
+        //未查询到数据 返回错误提示
+        return ServiceResultEnum.DATA_NOT_EXIST.getResult();
+    }
+
+    @Override
+    @Transactional
     public String checkOut(Long[] ids) {
         //查询所有的订单 判断状态 修改状态和更新时间
         List<NewBeeMallOrder> orders = newBeeMallOrderMapper.selectByPrimaryKeys(Arrays.asList(ids));
         String errorOrderNos = "";
         if (!CollectionUtils.isEmpty(orders)) {
             for (NewBeeMallOrder newBeeMallOrder : orders) {
+                //订单是否存在
                 if (newBeeMallOrder.getIsDeleted() == 1) {
                     errorOrderNos += newBeeMallOrder.getOrderNo() + " ";
                     continue;
                 }
+                //是否已出库 订单状态为3-->已经出库，不能重复出库
                 if (newBeeMallOrder.getOrderStatus() != 1 && newBeeMallOrder.getOrderStatus() != 2) {
                     errorOrderNos += newBeeMallOrder.getOrderNo() + " ";
                 }

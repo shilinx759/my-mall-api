@@ -19,6 +19,7 @@ public class NewBeeMallOrder {
 
     private Byte payType;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date payTime;
 
     private Byte orderStatus;

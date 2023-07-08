@@ -2,7 +2,9 @@
 package com.my.mall.dao;
 
 import com.my.mall.entity.MallUserToken;
+import org.apache.ibatis.annotations.Mapper;
 
+@Mapper
 public interface NewBeeMallUserTokenMapper {
     int deleteByPrimaryKey(Long userId);
 

@@ -68,14 +68,18 @@ public class AdminOrderAPI {
 
     /**
      * 配货
+     * 传入参数：一个订单ID 数组
+     * 作用：将数组中所有 订单的状态修改为出库；内部使用ID 集合到数据库中查询出对应的订单记录，并返回一个订单类型的列表
+     * 返回：执行成功或失败信息
      */
     @RequestMapping(value = "/orders/checkDone", method = RequestMethod.PUT)
     @ApiOperation(value = "修改订单状态为配货成功", notes = "批量修改")
     public Result checkDone(@RequestBody BatchIdParam batchIdParam, @TokenToAdminUser AdminUserToken adminUser) {
         logger.info("adminUser:{}", adminUser.toString());
-        if (batchIdParam==null||batchIdParam.getIds().length < 1) {
+        if (batchIdParam==null||batchIdParam.getIds().length < 1) {//获取需要checkOut 的订单ID列表
             return ResultGenerator.genFailResult("参数异常！");
         }
+        //执行checkDown
         String result = newBeeMallOrderService.checkDone(batchIdParam.getIds());
         if (ServiceResultEnum.SUCCESS.getResult().equals(result)) {
             return ResultGenerator.genSuccessResult();

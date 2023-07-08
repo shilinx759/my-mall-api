@@ -4,7 +4,8 @@ import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@MapperScan("com.my.mall.dao")
+//@MapperScan("com.my.mall.dao")
+//@MapperScan("com.hadoopx.issue.mapper")
 @SpringBootApplication
 public class MyMallAPIApplication {
 

@@ -4,10 +4,11 @@ package com.my.mall.dao;
 import com.my.mall.entity.NewBeeMallGoods;
 import com.my.mall.entity.StockNumDTO;
 import com.my.mall.util.PageQueryUtil;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-
+@Mapper
 public interface NewBeeMallGoodsMapper {
     int deleteByPrimaryKey(Long goodsId);
 

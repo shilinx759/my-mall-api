@@ -3,10 +3,11 @@ package com.my.mall.dao;
 
 import com.my.mall.entity.GoodsCategory;
 import com.my.mall.util.PageQueryUtil;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-
+@Mapper
 public interface GoodsCategoryMapper {
     int deleteByPrimaryKey(Long categoryId);
 

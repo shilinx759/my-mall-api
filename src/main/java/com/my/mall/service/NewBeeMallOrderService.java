@@ -100,5 +100,19 @@ public interface NewBeeMallOrderService {
      */
     String closeOrder(Long[] ids);
 
+    /**
+     * 完成订单
+     * @param ids
+     * @return
+     */
+    String checkFinish(Long[] ids);
+
+    /**
+     * 删除订单
+     * @param ids
+     * @return
+     */
+    String deleteOrder(Long[] ids);
+
     List<OrderItemVO> getOrderItems(Long orderId);
 }
