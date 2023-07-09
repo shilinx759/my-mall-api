@@ -41,19 +41,27 @@ public class NewBeeMallOrderServiceImpl implements NewBeeMallOrderService {
 
     @Override
     public OrderDetailVO getOrderDetailByOrderId(Long orderId) {
+        //选到对应的的order 没有地址
         NewBeeMallOrder newBeeMallOrder = newBeeMallOrderMapper.selectByPrimaryKey(orderId);
         if (newBeeMallOrder == null) {
             NewBeeMallException.fail(ServiceResultEnum.DATA_NOT_EXIST.getResult());
         }
+        //通过订单号查询 拿到 order中包含的 order中的商品的列表
         List<NewBeeMallOrderItem> orderItems = newBeeMallOrderItemMapper.selectByOrderId(newBeeMallOrder.getOrderId());
         //获取订单项数据
         if (!CollectionUtils.isEmpty(orderItems)) {
+            //把该订单对应的商品列表拿复制到纯商品列表
             List<OrderItemVO> newBeeMallOrderItemVOS = BeanUtil.copyList(orderItems, OrderItemVO.class);
+            //再把纯的商品列表添加到订单详情（OrderDetailVO） 中的 订单项列表 属性中
+            //    @ApiModelProperty("订单项列表")
+            //    private List<OrderItemVO> newBeeMallOrderItemVOS;
             OrderDetailVO newBeeMallOrderDetailVO = new OrderDetailVO();
             BeanUtil.copyProperties(newBeeMallOrder, newBeeMallOrderDetailVO);
             newBeeMallOrderDetailVO.setOrderStatusString(NewBeeMallOrderStatusEnum.getNewBeeMallOrderStatusEnumByStatus(newBeeMallOrderDetailVO.getOrderStatus()).getName());
             newBeeMallOrderDetailVO.setPayTypeString(PayTypeEnum.getPayTypeEnumByType(newBeeMallOrderDetailVO.getPayType()).getName());
             newBeeMallOrderDetailVO.setNewBeeMallOrderItemVOS(newBeeMallOrderItemVOS);
+            NewBeeMallOrderAddress newBeeMallOrderAddress = newBeeMallOrderAddressMapper.selectByPrimaryKey(orderId);
+            newBeeMallOrderDetailVO.setOrderAddressVO(newBeeMallOrderAddress);
             return newBeeMallOrderDetailVO;
         } else {
             NewBeeMallException.fail(ServiceResultEnum.ORDER_ITEM_NULL_ERROR.getResult());

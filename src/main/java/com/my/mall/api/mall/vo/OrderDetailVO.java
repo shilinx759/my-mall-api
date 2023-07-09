@@ -2,6 +2,7 @@
 package com.my.mall.api.mall.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.my.mall.entity.NewBeeMallOrderAddress;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -46,4 +47,8 @@ public class OrderDetailVO implements Serializable {
 
     @ApiModelProperty("订单项列表")
     private List<OrderItemVO> newBeeMallOrderItemVOS;
+
+    @ApiModelProperty("本订单对应的地址")
+    private NewBeeMallOrderAddress orderAddressVO;
+
 }
