@@ -348,7 +348,7 @@ public class NewBeeMallOrderServiceImpl implements NewBeeMallOrderService {
             }
             if (StringUtils.isEmpty(errorOrderNos)) {
                 //订单状态正常 可以执行配货完成操作 修改订单状态和更新时间
-                if (newBeeMallOrderMapper.checkDone(Arrays.asList(ids)) > 0) {
+                if (newBeeMallOrderMapper.checkFinish(Arrays.asList(ids)) > 0) {
                     return ServiceResultEnum.SUCCESS.getResult();
                 } else {
                     return ServiceResultEnum.DB_ERROR.getResult();
@@ -356,9 +356,9 @@ public class NewBeeMallOrderServiceImpl implements NewBeeMallOrderService {
             } else {
                 //订单此时不可执行出库操作
                 if (errorOrderNos.length() > 0 && errorOrderNos.length() < 100) {
-                    return errorOrderNos + "订单的状态不是支付成功无法执行出库操作";
+                    return errorOrderNos + "订单的状态无法修改为已完成";
                 } else {
-                    return "你选择了太多状态不是支付成功的订单，无法执行配货完成操作";
+                    return "你选择了太多状态不是出库成功的订单，无法执行确认完成操作";
                 }
             }
         }
@@ -386,7 +386,7 @@ public class NewBeeMallOrderServiceImpl implements NewBeeMallOrderService {
             }
             if (StringUtils.isEmpty(errorOrderNos)) {
                 //订单状态正常 可以执行配货完成操作 修改订单状态和更新时间
-                if (newBeeMallOrderMapper.checkDone(Arrays.asList(ids)) > 0) {
+                if (newBeeMallOrderMapper.deleteOrder(Arrays.asList(ids)) > 0) {
                     return ServiceResultEnum.SUCCESS.getResult();
                 } else {
                     return ServiceResultEnum.DB_ERROR.getResult();
@@ -396,7 +396,7 @@ public class NewBeeMallOrderServiceImpl implements NewBeeMallOrderService {
                 if (errorOrderNos.length() > 0 && errorOrderNos.length() < 100) {
                     return errorOrderNos + "请选择删除已关闭订单";
                 } else {
-                    return "你选择了太多状态不是关闭的订单，无法执行删除操作";
+                    return "你选择了太多状态不是关闭状态的订单，无法执行删除操作";
                 }
             }
         }

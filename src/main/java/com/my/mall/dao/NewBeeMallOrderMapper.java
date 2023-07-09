@@ -34,4 +34,10 @@ public interface NewBeeMallOrderMapper {
     int closeOrder(@Param("orderIds") List<Long> orderIds, @Param("orderStatus") int orderStatus);
 
     int checkDone(@Param("orderIds") List<Long> asList);
+
+    int deleteOrder(@Param("orderIds") List<Long> orderIds);
+
+    int checkFinish(@Param("orderIds") List<Long> orderIds);
+
+
 }

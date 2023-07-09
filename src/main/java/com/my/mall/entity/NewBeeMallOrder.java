@@ -26,7 +26,7 @@ public class NewBeeMallOrder {
 
     private String extraInfo;
 
-    private Byte isDeleted;
+    private Byte isDeleted=0;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date createTime;

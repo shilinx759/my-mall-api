@@ -19,7 +19,7 @@
     <sql id="Base_Column_List">
     order_id, order_no, user_id, total_price, pay_status, pay_type, pay_time, order_status,
     extra_info, is_deleted, create_time, update_time
-  </sql>
+    </sql>
     <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>
@@ -44,7 +44,7 @@
     <select id="findNewBeeMallOrderList" parameterType="Map" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>
-        from tb_newbee_mall_order
+        from tb_newbee_mall_order where is_deleted=0
         <where>
             <if test="orderNo!=null and orderNo!=''">
                 and order_no = #{orderNo}
@@ -58,9 +58,9 @@
             <if test="orderStatus!=null">
                 and order_status = #{orderStatus}
             </if>
-            <if test="isDeleted!=null and isDeleted!=''">
-                and is_deleted = #{isDeleted}
-            </if>
+<!--            <if test="isDeleted!=null and isDeleted==0">-->
+<!--                and is_deleted = #{isDeleted}-->
+<!--            </if>-->
             <if test="startTime != null and startTime.trim() != ''">
                 and create_time &gt; #{startTime}
             </if>
@@ -75,7 +75,7 @@
     </select>
 
     <select id="getTotalNewBeeMallOrders" parameterType="Map" resultType="int">
-        select count(*) from tb_newbee_mall_order
+        select count(*) from tb_newbee_mall_order where is_deleted=0
         <where>
             <if test="orderNo!=null and orderNo!=''">
                 and order_no = #{orderNo}
@@ -89,9 +89,10 @@
             <if test="orderStatus!=null">
                 and order_status = #{orderStatus}
             </if>
-            <if test="isDeleted!=null and isDeleted!=''">
-                and is_deleted = #{isDeleted}
-            </if>
+<!--            <if test="isDeleted!=null and isDeleted!=''">-->
+<!--                and is_deleted = #{isDeleted}-->
+<!--            </if>-->
+
             <if test="startTime != null and startTime.trim() != ''">
                 and create_time &gt; #{startTime}
             </if>
@@ -215,6 +216,22 @@
     <update id="closeOrder">
         update tb_newbee_mall_order
         set order_status = #{orderStatus},update_time = now()
+        where order_id in
+        <foreach collection="orderIds" item="item" index="index"
+                 open="(" separator="," close=")">#{item}
+        </foreach>
+    </update>
+    <update id="deleteOrder">
+        update tb_newbee_mall_order
+        set is_deleted = 1,update_time = now()
+        where order_id in
+        <foreach collection="orderIds" item="item" index="index"
+                 open="(" separator="," close=")">#{item}
+        </foreach>
+    </update>
+    <update id="checkFinish">
+        update tb_newbee_mall_order
+        set order_status = 4,update_time = now()
         where order_id in
         <foreach collection="orderIds" item="item" index="index"
                  open="(" separator="," close=")">#{item}

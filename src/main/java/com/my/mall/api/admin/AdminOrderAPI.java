@@ -123,4 +123,42 @@ public class AdminOrderAPI {
             return ResultGenerator.genFailResult(result);
         }
     }
+
+
+    /**
+     * 完成
+     */
+    @RequestMapping(value = "/orders/checkFinish", method = RequestMethod.PUT)
+    @ApiOperation(value = "修改订单状态为已完成", notes = "批量修改")
+    public Result checkFinish(@RequestBody BatchIdParam batchIdParam, @TokenToAdminUser AdminUserToken adminUser) {
+        logger.info("adminUser:{}", adminUser.toString());
+        if (batchIdParam==null||batchIdParam.getIds().length < 1) {
+            return ResultGenerator.genFailResult("参数异常！");
+        }
+        String result = newBeeMallOrderService.checkFinish(batchIdParam.getIds());
+        if (ServiceResultEnum.SUCCESS.getResult().equals(result)) {
+            return ResultGenerator.genSuccessResult();
+        } else {
+            return ResultGenerator.genFailResult(result);
+        }
+    }
+
+
+    /**
+     * 删除已关闭订单
+     */
+    @RequestMapping(value = "/orders/deleteOrder", method = RequestMethod.PUT)
+    @ApiOperation(value = "修改isDeleted 为 1", notes = "批量修改")
+    public Result deleteOrder(@RequestBody BatchIdParam batchIdParam, @TokenToAdminUser AdminUserToken adminUser) {
+        logger.info("adminUser:{}", adminUser.toString());
+        if (batchIdParam==null||batchIdParam.getIds().length < 1) {
+            return ResultGenerator.genFailResult("参数异常！");
+        }
+        String result = newBeeMallOrderService.deleteOrder(batchIdParam.getIds());
+        if (ServiceResultEnum.SUCCESS.getResult().equals(result)) {
+            return ResultGenerator.genSuccessResult();
+        } else {
+            return ResultGenerator.genFailResult(result);
+        }
+    }
 }
