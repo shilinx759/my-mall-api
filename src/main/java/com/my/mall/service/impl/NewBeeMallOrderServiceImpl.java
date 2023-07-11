@@ -322,7 +322,14 @@ public class NewBeeMallOrderServiceImpl implements NewBeeMallOrderService {
         //不为空且orderStatus>=0且状态为出库之前可以修改部分信息
         if (temp != null && temp.getOrderStatus() >= 0 && temp.getOrderStatus() < 3) {
             //传入新的订单对象，总额从新算
-            temp.setTotalPrice(newOrderDetail.getTotalPrice());
+            int totalPrice = 0;
+            List<OrderItemVO> newBeeMallOrderItemVOS = newOrderDetail.getNewBeeMallOrderItemVOS();
+
+            for (OrderItemVO item : newBeeMallOrderItemVOS) {
+                int itemTotalPrice = item.getSellingPrice() * item.getGoodsCount();
+                totalPrice += itemTotalPrice;
+            }
+            temp.setTotalPrice(totalPrice);
             temp.setUpdateTime(new Date());
             //改地址，用户名
 //            BeanUtil.copyProperties(newOrderDetail.getOrderAddressVO(), tempUserAddress);
