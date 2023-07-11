@@ -11,6 +11,8 @@ import java.io.Serializable;
  */
 @Data
 public class OrderItemVO implements Serializable {
+    @ApiModelProperty("订单项id")
+    private Long orderItemId;
 
     @ApiModelProperty("商品id")
     private Long goodsId;

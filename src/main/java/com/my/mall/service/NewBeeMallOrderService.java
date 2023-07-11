@@ -115,4 +115,19 @@ public interface NewBeeMallOrderService {
     String deleteOrder(Long[] ids);
 
     List<OrderItemVO> getOrderItems(Long orderId);
+
+    /**
+     * 管理端更新订单详情
+     *
+     * @param newOrderDetail
+     * @return
+     */
+    String updateOrderDetailInfo(OrderDetailVO newOrderDetail);
+
+    /**
+     * 管理端删除订单中商品
+     * @param ids
+     * @return
+     */
+    String deleteOrderItem(Long orderItemId);
 }

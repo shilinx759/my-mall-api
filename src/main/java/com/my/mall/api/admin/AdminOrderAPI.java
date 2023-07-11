@@ -2,9 +2,12 @@
 package com.my.mall.api.admin;
 
 import com.my.mall.api.admin.param.BatchIdParam;
+import com.my.mall.api.admin.param.UpdateOrderDetailParam;
+import com.my.mall.api.mall.vo.OrderItemVO;
 import com.my.mall.common.ServiceResultEnum;
 import com.my.mall.config.annotation.TokenToAdminUser;
 import com.my.mall.entity.AdminUserToken;
+import com.my.mall.util.BeanUtil;
 import com.my.mall.util.PageQueryUtil;
 import com.my.mall.util.Result;
 import com.my.mall.util.ResultGenerator;
@@ -19,6 +22,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.sql.Date;
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -64,6 +69,37 @@ public class AdminOrderAPI {
     public Result<OrderDetailVO> orderDetailPage(@ApiParam(value = "订单号") @PathVariable("orderId") Long orderId, @TokenToAdminUser AdminUserToken adminUser) {
         logger.info("adminUser:{}", adminUser.toString());
         return ResultGenerator.genSuccessResult(newBeeMallOrderService.getOrderDetailByOrderId(orderId));
+    }
+
+    /**
+     * 修改订单详情信息
+     * @param orderDetailVO
+     * @param adminUser
+     * @return
+     */
+    @RequestMapping(value = "/orders/updateDetail",method = RequestMethod.PUT)
+    public Result updateOrderDetail(@RequestBody OrderDetailVO orderDetailVO, @TokenToAdminUser AdminUserToken adminUser) {
+        if (orderDetailVO == null) {
+            return ResultGenerator.genFailResult("参数异常");
+        }
+        logger.info("收到的参数:  " +orderDetailVO.toString());
+        //执行修改,得到前端参数，将参数转换为 orderDetail 对象
+        String result = newBeeMallOrderService.updateOrderDetailInfo(orderDetailVO);
+        return ResultGenerator.genSuccessResult(result);
+    }
+
+    @RequestMapping(value = "/orders/deleteItem",method = RequestMethod.GET)
+    public Result deleteOrderDetailItem( Long orderItemId, @TokenToAdminUser AdminUserToken adminUser) {
+        logger.info("adminUser:{}", adminUser.toString());
+        if (orderItemId == null) {
+            return ResultGenerator.genFailResult("orderItemId参数异常！");
+        }
+        String result = newBeeMallOrderService.deleteOrderItem(orderItemId);
+        if (ServiceResultEnum.SUCCESS.getResult().equals(result)) {
+            return ResultGenerator.genSuccessResult();
+        } else {
+            return ResultGenerator.genFailResult(result);
+        }
     }
 
     /**

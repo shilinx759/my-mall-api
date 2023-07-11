@@ -1,6 +1,7 @@
 
 package com.my.mall.service.impl;
 
+import com.my.mall.api.mall.vo.*;
 import com.my.mall.common.*;
 import com.my.mall.dao.*;
 import com.my.mall.entity.*;
@@ -8,11 +9,10 @@ import com.my.mall.util.BeanUtil;
 import com.my.mall.util.NumberUtil;
 import com.my.mall.util.PageQueryUtil;
 import com.my.mall.util.PageResult;
-import com.my.mall.api.mall.vo.OrderDetailVO;
-import com.my.mall.api.mall.vo.OrderItemVO;
-import com.my.mall.api.mall.vo.OrderListVO;
-import com.my.mall.api.mall.vo.ShoppingCartItemVO;
 import com.my.mall.service.NewBeeMallOrderService;
+import com.sun.xml.internal.messaging.saaj.packaging.mime.util.BEncoderStream;
+import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import static java.util.stream.Collectors.groupingBy;
 
 @Service
+@Slf4j
 public class NewBeeMallOrderServiceImpl implements NewBeeMallOrderService {
 
     @Autowired
@@ -46,20 +47,25 @@ public class NewBeeMallOrderServiceImpl implements NewBeeMallOrderService {
         if (newBeeMallOrder == null) {
             NewBeeMallException.fail(ServiceResultEnum.DATA_NOT_EXIST.getResult());
         }
-        //通过订单号查询 拿到 order中包含的 order中的商品的列表
+        //通过订单号查询 拿到 order中包含的 order中的商品的列表，有orderItemId的
         List<NewBeeMallOrderItem> orderItems = newBeeMallOrderItemMapper.selectByOrderId(newBeeMallOrder.getOrderId());
         //获取订单项数据
         if (!CollectionUtils.isEmpty(orderItems)) {
             //把该订单对应的商品列表拿复制到纯商品列表
             List<OrderItemVO> newBeeMallOrderItemVOS = BeanUtil.copyList(orderItems, OrderItemVO.class);
+
+            log.info("复制后的购物车列表: "+newBeeMallOrderItemVOS.toString());
+            log.info("购物车列表: "+orderItems.toString());
             //再把纯的商品列表添加到订单详情（OrderDetailVO） 中的 订单项列表 属性中
             //    @ApiModelProperty("订单项列表")
             //    private List<OrderItemVO> newBeeMallOrderItemVOS;
             OrderDetailVO newBeeMallOrderDetailVO = new OrderDetailVO();
+            //复制订单信息
             BeanUtil.copyProperties(newBeeMallOrder, newBeeMallOrderDetailVO);
             newBeeMallOrderDetailVO.setOrderStatusString(NewBeeMallOrderStatusEnum.getNewBeeMallOrderStatusEnumByStatus(newBeeMallOrderDetailVO.getOrderStatus()).getName());
             newBeeMallOrderDetailVO.setPayTypeString(PayTypeEnum.getPayTypeEnumByType(newBeeMallOrderDetailVO.getPayType()).getName());
             newBeeMallOrderDetailVO.setNewBeeMallOrderItemVOS(newBeeMallOrderItemVOS);
+
             NewBeeMallOrderAddress newBeeMallOrderAddress = newBeeMallOrderAddressMapper.selectByPrimaryKey(orderId);
             newBeeMallOrderDetailVO.setOrderAddressVO(newBeeMallOrderAddress);
             return newBeeMallOrderDetailVO;
@@ -86,6 +92,10 @@ public class NewBeeMallOrderServiceImpl implements NewBeeMallOrderService {
         List<OrderItemVO> newBeeMallOrderItemVOS = BeanUtil.copyList(orderItems, OrderItemVO.class);
         OrderDetailVO newBeeMallOrderDetailVO = new OrderDetailVO();
         BeanUtil.copyProperties(newBeeMallOrder, newBeeMallOrderDetailVO);
+
+
+
+
         newBeeMallOrderDetailVO.setOrderStatusString(NewBeeMallOrderStatusEnum.getNewBeeMallOrderStatusEnumByStatus(newBeeMallOrderDetailVO.getOrderStatus()).getName());
         newBeeMallOrderDetailVO.setPayTypeString(PayTypeEnum.getPayTypeEnumByType(newBeeMallOrderDetailVO.getPayType()).getName());
         newBeeMallOrderDetailVO.setNewBeeMallOrderItemVOS(newBeeMallOrderItemVOS);
@@ -290,13 +300,51 @@ public class NewBeeMallOrderServiceImpl implements NewBeeMallOrderService {
         NewBeeMallOrder temp = newBeeMallOrderMapper.selectByPrimaryKey(newBeeMallOrder.getOrderId());
         //不为空且orderStatus>=0且状态为出库之前可以修改部分信息
         if (temp != null && temp.getOrderStatus() >= 0 && temp.getOrderStatus() < 3) {
+            //传入新的订单对象，总额从新算
             temp.setTotalPrice(newBeeMallOrder.getTotalPrice());
+            //
             temp.setUpdateTime(new Date());
             if (newBeeMallOrderMapper.updateByPrimaryKeySelective(temp) > 0) {
                 return ServiceResultEnum.SUCCESS.getResult();
             }
             return ServiceResultEnum.DB_ERROR.getResult();
         }
+        return ServiceResultEnum.DATA_NOT_EXIST.getResult();
+    }
+
+    @Override
+    @Transactional
+    public String updateOrderDetailInfo(OrderDetailVO newOrderDetail) {
+        //订单信息暂存
+        NewBeeMallOrder temp = newBeeMallOrderMapper.selectByPrimaryKey(newOrderDetail.getOrderId());
+        NewBeeMallOrderAddress tempUserAddress = newBeeMallOrderAddressMapper.selectByPrimaryKey(newOrderDetail.getOrderId());
+
+        //不为空且orderStatus>=0且状态为出库之前可以修改部分信息
+        if (temp != null && temp.getOrderStatus() >= 0 && temp.getOrderStatus() < 3) {
+            //传入新的订单对象，总额从新算
+            temp.setTotalPrice(newOrderDetail.getTotalPrice());
+            temp.setUpdateTime(new Date());
+            //改地址，用户名
+            BeanUtil.copyProperties(newOrderDetail.getOrderAddressVO(), tempUserAddress);
+            if (newBeeMallOrderMapper.updateByPrimaryKeySelective(temp) > 0 && newBeeMallOrderAddressMapper.updateByPrimaryKeySelective(tempUserAddress)>0) {
+                return ServiceResultEnum.SUCCESS.getResult();
+            }
+            return ServiceResultEnum.DB_ERROR.getResult();
+        }
+        return ServiceResultEnum.DATA_NOT_EXIST.getResult();
+    }
+    @Override
+    @Transactional
+    public String deleteOrderItem(Long orderItemId) {
+        //判断参数非空
+        if (orderItemId!=null) {
+            //判断是否执行成功
+            //传参删除
+            if (newBeeMallOrderItemMapper.deleteByPrimaryKey(orderItemId)>0) {
+                return ServiceResultEnum.SUCCESS.getResult();
+            }
+        }
+        //参数无效
         return ServiceResultEnum.DATA_NOT_EXIST.getResult();
     }
 
