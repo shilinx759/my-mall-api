@@ -317,7 +317,7 @@ public class NewBeeMallOrderServiceImpl implements NewBeeMallOrderService {
     public String updateOrderDetailInfo(OrderDetailVO newOrderDetail) {
         //订单信息暂存
         NewBeeMallOrder temp = newBeeMallOrderMapper.selectByPrimaryKey(newOrderDetail.getOrderId());
-        NewBeeMallOrderAddress tempUserAddress = newBeeMallOrderAddressMapper.selectByPrimaryKey(newOrderDetail.getOrderId());
+        NewBeeMallOrderAddress tempUserAddress = newOrderDetail.getOrderAddressVO();
 
         //不为空且orderStatus>=0且状态为出库之前可以修改部分信息
         if (temp != null && temp.getOrderStatus() >= 0 && temp.getOrderStatus() < 3) {
@@ -325,7 +325,7 @@ public class NewBeeMallOrderServiceImpl implements NewBeeMallOrderService {
             temp.setTotalPrice(newOrderDetail.getTotalPrice());
             temp.setUpdateTime(new Date());
             //改地址，用户名
-            BeanUtil.copyProperties(newOrderDetail.getOrderAddressVO(), tempUserAddress);
+//            BeanUtil.copyProperties(newOrderDetail.getOrderAddressVO(), tempUserAddress);
             if (newBeeMallOrderMapper.updateByPrimaryKeySelective(temp) > 0 && newBeeMallOrderAddressMapper.updateByPrimaryKeySelective(tempUserAddress)>0) {
                 return ServiceResultEnum.SUCCESS.getResult();
             }
@@ -436,9 +436,9 @@ public class NewBeeMallOrderServiceImpl implements NewBeeMallOrderService {
                     continue;
                 }
                 //只有超时关闭、商家关闭、手动关闭的订单 可以删除
-                if (newBeeMallOrder.getOrderStatus() >0 ) {
-                    errorOrderNos += newBeeMallOrder.getOrderNo() + " ";
-                }
+//                if (newBeeMallOrder.getOrderStatus() >0 ) {
+//                    errorOrderNos += newBeeMallOrder.getOrderNo() + " ";
+//                }
             }
             if (StringUtils.isEmpty(errorOrderNos)) {
                 //订单状态正常 可以执行配货完成操作 修改订单状态和更新时间
