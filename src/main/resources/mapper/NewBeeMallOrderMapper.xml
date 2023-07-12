@@ -44,7 +44,7 @@
     <select id="findNewBeeMallOrderList" parameterType="Map" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>
-        from tb_newbee_mall_order where is_deleted=0
+        from tb_newbee_mall_order
         <where>
             <if test="orderNo!=null and orderNo!=''">
                 and order_no = #{orderNo}
@@ -58,9 +58,9 @@
             <if test="orderStatus!=null">
                 and order_status = #{orderStatus}
             </if>
-<!--            <if test="isDeleted!=null and isDeleted==0">-->
-<!--                and is_deleted = #{isDeleted}-->
-<!--            </if>-->
+            <if test="isDeleted!=null and isDeleted==0">
+                and is_deleted = 0
+            </if>
             <if test="startTime != null and startTime.trim() != ''">
                 and create_time &gt; #{startTime}
             </if>
@@ -75,7 +75,7 @@
     </select>
 
     <select id="getTotalNewBeeMallOrders" parameterType="Map" resultType="int">
-        select count(*) from tb_newbee_mall_order where is_deleted=0
+        select count(*) from tb_newbee_mall_order
         <where>
             <if test="orderNo!=null and orderNo!=''">
                 and order_no = #{orderNo}
@@ -89,9 +89,9 @@
             <if test="orderStatus!=null">
                 and order_status = #{orderStatus}
             </if>
-<!--            <if test="isDeleted!=null and isDeleted!=''">-->
-<!--                and is_deleted = #{isDeleted}-->
-<!--            </if>-->
+            <if test="isDeleted!=null and isDeleted!=''">
+                and is_deleted = 0
+            </if>
 
             <if test="startTime != null and startTime.trim() != ''">
                 and create_time &gt; #{startTime}

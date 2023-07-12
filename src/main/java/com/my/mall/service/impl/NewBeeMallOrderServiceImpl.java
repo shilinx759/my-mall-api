@@ -53,9 +53,12 @@ public class NewBeeMallOrderServiceImpl implements NewBeeMallOrderService {
         if (!CollectionUtils.isEmpty(orderItems)) {
             //把该订单对应的商品列表拿复制到纯商品列表
             List<OrderItemVO> newBeeMallOrderItemVOS = BeanUtil.copyList(orderItems, OrderItemVO.class);
+            //重新算总价
+            int total = 0;
+            for (NewBeeMallOrderItem orderItem : orderItems) {
+                total += orderItem.getGoodsCount() * orderItem.getSellingPrice();
+            }
 
-            log.info("复制后的购物车列表: "+newBeeMallOrderItemVOS.toString());
-            log.info("购物车列表: "+orderItems.toString());
             //再把纯的商品列表添加到订单详情（OrderDetailVO） 中的 订单项列表 属性中
             //    @ApiModelProperty("订单项列表")
             //    private List<OrderItemVO> newBeeMallOrderItemVOS;
@@ -65,6 +68,7 @@ public class NewBeeMallOrderServiceImpl implements NewBeeMallOrderService {
             newBeeMallOrderDetailVO.setOrderStatusString(NewBeeMallOrderStatusEnum.getNewBeeMallOrderStatusEnumByStatus(newBeeMallOrderDetailVO.getOrderStatus()).getName());
             newBeeMallOrderDetailVO.setPayTypeString(PayTypeEnum.getPayTypeEnumByType(newBeeMallOrderDetailVO.getPayType()).getName());
             newBeeMallOrderDetailVO.setNewBeeMallOrderItemVOS(newBeeMallOrderItemVOS);
+            newBeeMallOrderDetailVO.setTotalPrice(total);
 
             NewBeeMallOrderAddress newBeeMallOrderAddress = newBeeMallOrderAddressMapper.selectByPrimaryKey(orderId);
             newBeeMallOrderDetailVO.setOrderAddressVO(newBeeMallOrderAddress);

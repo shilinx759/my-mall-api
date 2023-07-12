@@ -85,7 +85,11 @@ public class AdminOrderAPI {
         logger.info("收到的参数:  " +orderDetailVO.toString());
         //执行修改,得到前端参数，将参数转换为 orderDetail 对象
         String result = newBeeMallOrderService.updateOrderDetailInfo(orderDetailVO);
-        return ResultGenerator.genSuccessResult(result);
+        if (ServiceResultEnum.SUCCESS.getResult().equals(result)) {
+            return ResultGenerator.genSuccessResult(result);
+        }else {
+            return ResultGenerator.genFailResult("订单无法出库");
+        }
     }
 
     @RequestMapping(value = "/orders/deleteItem",method = RequestMethod.GET)
